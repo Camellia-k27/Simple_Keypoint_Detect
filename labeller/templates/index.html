@@ -20,6 +20,14 @@
     .blue-dot {
       background-color: blue;
     }
+    #image-container.drawing {
+      cursor: crosshair;
+    }
+    .box {
+      position: absolute;
+      border: 2px solid green;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -28,12 +36,16 @@
 
   <div id="image-container">
     <img id="image" src="" alt="Image">
+      <div class="overlay"></div>
+      <div id="box" class="box" style="display: none;"></div>
     <div id="red-dot" class="dot red-dot" style="display: none;"></div>
     <div id="blue-dot" class="dot blue-dot" style="display: none;"></div>
+    
   </div>
 
   <button onclick="confirmPoints()">Confirm</button>
   <button id="buttonA">Upload Image</button>
+  <button id="bbox">Draw Bounding Box</button>
 
   <a id="downloadAnchorElem" style="display:none"></a>
   <p>Click Count: <span id="click-count-display"></span></p>
@@ -49,6 +61,51 @@
     var data = {};
     var clickCount = 4;
 
+    var isDrawing = false;
+    var startX, startY, endX, endY;
+    var boundingBox = [[0,0,0,0]];
+
+    function startDrawing(event) {
+      $("#image").attr("draggable", "false");
+      $("#image").attr("onselectstart", "return false;");
+      $("#image").attr("onmousedown", "return false;");
+      startX = event.pageX - $(this).offset().left;
+      startY = event.pageY -$(this).offset().top;
+    }
+
+    function endDrawing(event) {
+      if (isDrawing) {
+        endX = event.pageX - $(this).offset().left;
+        endY = event.pageY -$(this).offset().top;
+        var left = Math.min(startX, endX);
+        var top = Math.max(startY, endY);
+        var right = Math.max(startX, endX);
+        var bottom = Math.min(startY, endY);
+        var width = Math.abs(startX - endX); // Calculate width
+        var height = Math.abs(startY - endY); // Calculate height
+        boundingBox = [[left,bottom,right,top]];
+        var box = $("#box");
+        box.css({left: left, bottom: event.pageY - bottom, width: width, height: height, position: "absolute"}); // Set width and height
+        box.show();
+        console.log("Bounding Box:", boundingBox);
+        // You can perform further actions with the bounding box data
+      }
+      isDrawing = false;
+      $("#image-container").removeClass("drawing");
+
+      console.log("Drawing Bounding Box", isDrawing);
+    }
+
+    $("#bbox").click(function() {
+      isDrawing = true;
+      console.log("Drawing Bounding Box", isDrawing);
+      $("#image-container").addClass("drawing");
+      $("#image-container.drawing").mousedown(startDrawing);
+      $("#image-container.drawing").mouseup(endDrawing);
+    });
+
+    
+
     function updateClickCount() {
     $('#click-count-display').text(clickCount);
     }
@@ -58,7 +115,7 @@
 
     function loadImage(src) {
       imageSrc = src;
-      $("#image").attr("src", imageSrc);
+      $("#image").attr("src", src);
     }
 
     function markRedDot(x, y) {
@@ -75,6 +132,7 @@
     
     function confirmPoints() {
       data['keypoints'] = [[[points["red_dot"]["x"],points["red_dot"]["y"],1],[points["blue_dot"]["x"],points["blue_dot"]["y"],1]]];
+      data['bboxes'] = boundingBox;
       var jsonString = JSON.stringify(data);
       downloadObjectAsJson(data, imageName);
       alert("Points saved:\n" + jsonString);
@@ -89,6 +147,7 @@
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
     }
+
     // Sample usage:
     loadImage("static/piggy.png");
     
