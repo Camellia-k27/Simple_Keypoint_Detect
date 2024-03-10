@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Labeling Tool</title>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <style>
+    #image-container {
+      position: relative;
+      display: inline-block;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      position: absolute;
+    }
+    .red-dot {
+      background-color: red;
+    }
+    .blue-dot {
+      background-color: blue;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Image Labeling Tool</h2>
+
+  <div id="image-container">
+    <img id="image" src="" alt="Image">
+    <div id="red-dot" class="dot red-dot" style="display: none;"></div>
+    <div id="blue-dot" class="dot blue-dot" style="display: none;"></div>
+  </div>
+
+  <button onclick="confirmPoints()">Confirm</button>
+  <button id="buttonA">Upload Image</button>
+
+  <a id="downloadAnchorElem" style="display:none"></a>
+  <p>Click Count: <span id="click-count-display"></span></p>
+  <p>path: <span id="path"></span></p>
+
+  <script>
+    var imageSrc = "";
+    var imageName = imageSrc.substring(imageSrc.lastIndexOf('/') + 1);
+    //var imageName = imageSrc;
+    var redDot = $("#red-dot");
+    var blueDot = $("#blue-dot");
+    var points = {};
+    var data = {};
+    var clickCount = 4;
+
+    function updateClickCount() {
+    $('#click-count-display').text(clickCount);
+    }
+    function showPath(i) {
+    $('#path').text(i);
+    }
+
+    function loadImage(src) {
+      imageSrc = src;
+      $("#image").attr("src", imageSrc);
+    }
+
+    function markRedDot(x, y) {
+      redDot.css({left: x, top: y});
+      redDot.show();
+      points["red_dot"] = {"x": x, "y": y};
+    }
+
+    function markBlueDot(j, k) {
+      blueDot.css({left: j, top: k});
+      blueDot.show();
+      points["blue_dot"] = {"x": j, "y": k};
+    }
+    
+    function confirmPoints() {
+      data['keypoints'] = [[[points["red_dot"]["x"],points["red_dot"]["y"],1],[points["blue_dot"]["x"],points["blue_dot"]["y"],1]]];
+      var jsonString = JSON.stringify(data);
+      downloadObjectAsJson(data, imageName);
+      alert("Points saved:\n" + jsonString);
+    }
+
+    function downloadObjectAsJson(exportObj, exportName){
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
+      var downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", exportName + ".json");
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+    // Sample usage:
+    loadImage("static/piggy.png");
+    
+    $("#buttonA").click(function() {
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.onchange = function(event) {
+        var file = event.target.files[0];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var imageUrl = e.target.result;
+          imageName =file.name;
+          loadImage(imageUrl);
+          showPath(file.name);
+        };
+        reader.readAsDataURL(file);
+      };
+      fileInput.click();
+    });
+    // Event listener for marking points on click
+    $("#image-container").click(function(event) {
+      var x = event.pageX - $(this).offset().left;
+      var y = event.pageY - $(this).offset().top;
+     
+      if (clickCount % 3 === 0) {
+        // Canceling logic
+        redDot.hide();
+        blueDot.hide();
+        delete points["red_dot"];
+        delete points["blue_dot"];
+      } else if (clickCount % 3 === 1) {
+        // Red dot logic
+        markRedDot(x, y);
+      } else {
+        // Blue dot logic
+        markBlueDot(x, y);
+      }
+      
+      clickCount++;
+      updateClickCount();
+      // You can customize the logic for red and blue dots based on user interactions
+    });
+ 
+
+  </script>
+
+</body>
+</html>
