@@ -147,7 +147,7 @@
       data['keypoints'] = [[[points["red_dot"]["x"],points["red_dot"]["y"],1],[points["blue_dot"]["x"],points["blue_dot"]["y"],1]]];
       data['bboxes'] = boundingBox;
       var jsonString = JSON.stringify(data);
-      downloadObjectAsJson(data, imageName-'.jpg');
+      downloadObjectAsJson(data, imageName.replace('.jpg', ''));
       alert("Points saved:\n" + jsonString);
     }
 
