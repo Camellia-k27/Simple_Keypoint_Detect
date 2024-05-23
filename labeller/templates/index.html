@@ -5,8 +5,9 @@
   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   <style>
     #image-container {
-      position: relative;
+      position: absolute;
       display: inline-block;
+
     }
     .dot {
       width: 10px;
@@ -27,6 +28,9 @@
       position: absolute;
       border: 2px solid green;
       display: none;
+    }
+    button {
+    position: relative;
     }
   </style>
 </head>
@@ -65,27 +69,36 @@
     var startX, startY, endX, endY;
     var boundingBox = [[0,0,0,0]];
 
+    let imageElement = document.getElementById('image'); // replace 'image' with the id of your image element
+    let rect = imageElement.getBoundingClientRect();
+    
+
+
+
     function startDrawing(event) {
       $("#image").attr("draggable", "false");
       $("#image").attr("onselectstart", "return false;");
       $("#image").attr("onmousedown", "return false;");
-      startX = event.pageX - $(this).offset().left;
-      startY = event.pageY -$(this).offset().top;
+      console.log("picture info",rect.left, rect.top);
+      startX = event.pageX - rect.left;
+      startY = event.pageY - rect.top;
+
+      console.log("Start Drawing", startX, startY);
     }
 
     function endDrawing(event) {
       if (isDrawing) {
-        endX = event.pageX - $(this).offset().left;
-        endY = event.pageY -$(this).offset().top;
+        endX = event.pageX - rect.left;
+        endY = event.pageY - rect.top;
         var left = Math.min(startX, endX);
-        var top = Math.max(startY, endY);
+        var bottom = Math.max(startY, endY);
         var right = Math.max(startX, endX);
-        var bottom = Math.min(startY, endY);
+        var top = Math.min(startY, endY);
         var width = Math.abs(startX - endX); // Calculate width
         var height = Math.abs(startY - endY); // Calculate height
-        boundingBox = [[left,bottom,right,top]];
+        boundingBox = [[left,top,right,bottom]];
         var box = $("#box");
-        box.css({left: left, bottom: event.pageY - bottom, width: width, height: height, position: "absolute"}); // Set width and height
+        box.css({left: left, top:top , width: width, height: height, position: "absolute"}); // Set width and height
         box.show();
         console.log("Bounding Box:", boundingBox);
         // You can perform further actions with the bounding box data
@@ -134,7 +147,7 @@
       data['keypoints'] = [[[points["red_dot"]["x"],points["red_dot"]["y"],1],[points["blue_dot"]["x"],points["blue_dot"]["y"],1]]];
       data['bboxes'] = boundingBox;
       var jsonString = JSON.stringify(data);
-      downloadObjectAsJson(data, imageName);
+      downloadObjectAsJson(data, imageName-'.jpg');
       alert("Points saved:\n" + jsonString);
     }
 
