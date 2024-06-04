@@ -1,10 +1,11 @@
 ### Todo
 
-- [ ] PPT: Different Dataset  
+
 - [ ] Import pre-trained model  
 
 ### In Progress
 
+- [ ] PPT: Different Dataset  
 - [ ] Poor performance of Blocked dataset  
 
 ### Done ✓
