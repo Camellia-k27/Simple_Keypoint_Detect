@@ -1,20 +1,22 @@
 ### Todo
 
 
-- [ ] Import pre-trained model  
+
 
 ### In Progress
 
 - [ ] PPT: Different Dataset  
-- [ ] Poor performance of Blocked dataset  
+ 
 
 ### Done ✓
 
 - [x] Change folder names  
 - [x] Bug of blocked set(out_bound y_max): https://github.com/albumentations-team/albumentations/issues/459  
+- [x] Download Model from Huggingface
+- [x] Showing only one link to the labeller
+- [x] Import pre-trained model     
 
-
-#### Keypoint Scenarios
+#### 2 Keypoint Scenarios
 
 This repository supports the detection of 2 keypoints scenarios. You can use the provided labeller to label your images accordingly.
 
