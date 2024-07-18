@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-def downscale_images(directory, size=(80, 60)):
+def downscale_images(directory, size=(80, 44)):
     for filename in os.listdir(directory):
         if filename.endswith(".jpg") or filename.endswith(".png"):
             img = Image.open(os.path.join(directory, filename))
@@ -20,7 +20,7 @@ def upscale_images(directory, size=(400, 300)):
             img.save(os.path.join(directory, 'upscaled_'+filename))
 
 
-PATH = 'train_blurred\images'
+PATH = 'temp/'
 
-upscale_images(PATH)
+downscale_images(PATH)
 
