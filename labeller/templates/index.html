@@ -37,9 +37,8 @@
       display: none;
     }
     button {
-    position: relative;
+      position: relative;
     }
-    
   </style>
 </head>
 <body>
@@ -52,22 +51,18 @@
     </div>
   </div>
   <div id="image-container">
-    <img id="image" src="" alt="Image">
-      <div class="overlay"></div>
-      <div id="box" class="box" style="display: none;"></div>
+    <img id="image" src="static/CUHK_AI_for_future.jpg" alt="Image">
+    <div class="overlay"></div>
+    <div id="box" class="box" style="display: none;"></div>
     <div id="red-dot" class="dot red-dot" style="display: none;"></div>
     <div id="blue-dot" class="dot blue-dot" style="display: none;"></div>
-    
   </div>
 
-  
   <a id="downloadAnchorElem" style="display:none"></a>
-  
 
   <script>
-    var imageSrc = "";
+    var imageSrc = "static/CUHK_AI_for_future.jpg";
     var imageName = imageSrc.substring(imageSrc.lastIndexOf('/') + 1);
-    //var imageName = imageSrc;
     var redDot = $("#red-dot");
     var blueDot = $("#blue-dot");
     var points = {};
@@ -78,17 +73,14 @@
     var startX, startY, endX, endY;
     var boundingBox = [[0,0,0,0]];
 
-    let imageElement = document.getElementById('image'); // replace 'image' with the id of your image element
+    let imageElement = document.getElementById('image');
     let rect = imageElement.getBoundingClientRect();
-    
-
-
 
     function startDrawing(event) {
       $("#image").attr("draggable", "false");
       $("#image").attr("onselectstart", "return false;");
       $("#image").attr("onmousedown", "return false;");
-      console.log("picture info",rect.left, rect.top);
+      console.log("picture info", rect.left, rect.top);
       startX = event.pageX - rect.left;
       startY = event.pageY - rect.top;
 
@@ -105,12 +97,11 @@
         var top = Math.min(startY, endY);
         var width = Math.abs(startX - endX); // Calculate width
         var height = Math.abs(startY - endY); // Calculate height
-        boundingBox = [[left,top,right,bottom]];
+        boundingBox = [[left, top, right, bottom]];
         var box = $("#box");
-        box.css({left: left, top:top , width: width, height: height, position: "absolute"}); // Set width and height
+        box.css({left: left, top: top , width: width, height: height, position: "absolute"}); // Set width and height
         box.show();
         console.log("Bounding Box:", boundingBox);
-        // You can perform further actions with the bounding box data
       }
       isDrawing = false;
       $("#image-container").removeClass("drawing");
@@ -126,13 +117,12 @@
       $("#image-container.drawing").mouseup(endDrawing);
     });
 
-    
-
     function updateClickCount() {
-    $('#click-count-display').text(clickCount);
+      $('#click-count-display').text(clickCount);
     }
+
     function showPath(i) {
-    $('#path').text(i);
+      $('#path').text(i);
     }
 
     function loadImage(src) {
@@ -151,28 +141,29 @@
       blueDot.show();
       points["blue_dot"] = {"x": j, "y": k};
     }
-    
+
     function confirmPoints() {
-      data['keypoints'] = [[[points["red_dot"]["x"],points["red_dot"]["y"],1],[points["blue_dot"]["x"],points["blue_dot"]["y"],1]]];
+      data['keypoints'] = [[[points["red_dot"]["x"], points["red_dot"]["y"], 1], [points["blue_dot"]["x"], points["blue_dot"]["y"], 1]]];
       data['bboxes'] = boundingBox;
-      var jsonString = JSON.stringify(data);
-      downloadObjectAsJson(data, imageName.replace('.jpg', ''));
-      alert("Points saved:\n" + jsonString);
+
+      // 發送POST請求以保存JSON文件到Colab環境
+      $.ajax({
+        url: '/save_json',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          file_name: imageName.replace('.jpg', '') + '.json',
+          json_data: data
+        }),
+        success: function(response) {
+          alert(response.message);
+        },
+        error: function(error) {
+          alert('Error saving JSON file.');
+        }
+      });
     }
 
-    function downloadObjectAsJson(exportObj, exportName){
-      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
-      var downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href",     dataStr);
-      downloadAnchorNode.setAttribute("download", exportName + ".json");
-      document.body.appendChild(downloadAnchorNode); // required for firefox
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-    }
-
-    // Sample usage:
-    loadImage("static/piggy.png");
-    
     $("#buttonA").click(function() {
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
@@ -182,7 +173,7 @@
         var reader = new FileReader();
         reader.onload = function(e) {
           var imageUrl = e.target.result;
-          imageName =file.name;
+          imageName = file.name;
           loadImage(imageUrl);
           showPath(file.name);
         };
@@ -190,32 +181,25 @@
       };
       fileInput.click();
     });
-    // Event listener for marking points on click
+
     $("#image-container").click(function(event) {
       var x = event.pageX - $(this).offset().left;
       var y = event.pageY - $(this).offset().top;
-     
+
       if (clickCount % 3 === 0) {
-        // Canceling logic
         redDot.hide();
         blueDot.hide();
         delete points["red_dot"];
         delete points["blue_dot"];
       } else if (clickCount % 3 === 1) {
-        // Red dot logic
         markRedDot(x, y);
       } else {
-        // Blue dot logic
         markBlueDot(x, y);
       }
-      
+
       clickCount++;
       updateClickCount();
-      // You can customize the logic for red and blue dots based on user interactions
     });
- 
-
   </script>
-
 </body>
 </html>
